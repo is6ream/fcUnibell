@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демо Flash Call авторизации | Unibell</title>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #50ffea;
+            --secondary: #9333ea;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a2439 100%);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .logo {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .auth-flow {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .flow-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-light);
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--bg-dark);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(80, 255, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-call {
+            background: linear-gradient(135deg, #00ff88, #00ccff);
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .call-simulation {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed var(--primary);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .call-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: 'Unbounded', sans-serif;
+            margin: 15px 0;
+        }
+
+        .call-status {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin: 10px 0;
+        }
+
+        .timer {
+            text-align: center;
+            margin: 20px 0;
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+            font-weight: 600;
+        }
+
+        .success {
+            background: rgba(80, 255, 234, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+
+        .info-panel {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .benefits-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .benefits-list li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+            color: var(--text-light);
+        }
+
+        .benefits-list li:before {
+            content: "✓";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Адаптация для планшетов */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+            }
+            
+            .demo-container {
+                gap: 30px;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 30px;
+            }
+            
+            .header {
+                margin-bottom: 30px;
+                padding: 15px;
+            }
+        }
+
+        /* Адаптация для мобильных устройств */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .demo-container {
+                grid-template-columns: 1fr;
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+                margin-bottom: 25px;
+                padding: 10px;
+            }
+            
+            .logo {
+                font-size: 28px;
+            }
+            
+            .company-info {
+                text-align: center;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+            
+            .flow-title {
+                font-size: 22px;
+                margin-bottom: 25px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            input {
+                padding: 12px 15px;
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 16px;
+            }
+            
+            .call-simulation {
+                padding: 25px 20px;
+                margin: 18px 0;
+            }
+            
+            .call-number {
+                font-size: 24px;
+                margin: 12px 0;
+            }
+            
+            .call-status {
+                font-size: 16px;
+                margin: 8px 0;
+            }
+            
+            .timer {
+                font-size: 16px;
+                margin: 18px 0;
+            }
+            
+            .status-message {
+                padding: 12px;
+                margin: 18px 0;
+                font-size: 15px;
+            }
+            
+            footer {
+                padding: 25px 15px;
+                font-size: 14px;
+            }
+        }
+
+        /* Адаптация для маленьких мобильных устройств */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+            }
+            
+            .logo {
+                font-size: 24px;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 20px 15px;
+                border-radius: 12px;
+            }
+            
+            .flow-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 18px;
+            }
+            
+            label {
+                font-size: 15px;
+                margin-bottom: 8px;
+            }
+            
+            input {
+                padding: 12px;
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 13px 18px;
+                font-size: 15px;
+            }
+            
+            .call-simulation {
+                padding: 20px 15px;
+                margin: 16px 0;
+            }
+            
+            .call-number {
+                font-size: 20px;
+                margin: 10px 0;
+            }
+            
+            .call-status {
+                font-size: 15px;
+            }
+            
+            .benefits-list li {
+                font-size: 14px;
+                margin-bottom: 12px;
+                padding-left: 22px;
+            }
+            
+            footer {
+                padding: 20px 10px;
+                font-size: 13px;
+            }
+        }
+
+        /* Адаптация для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .auth-flow, .info-panel {
+                padding: 18px 12px;
+            }
+            
+            .flow-title {
+                font-size: 18px;
+            }
+            
+            input {
+                padding: 10px 12px;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+            
+            .call-simulation {
+                padding: 18px 12px;
+            }
+            
+            .call-number {
+                font-size: 18px;
+            }
+            
+            .call-status {
+                font-size: 14px;
+            }
+        }
+
+        /* Поддержка ландшафтной ориентации */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 10px;
+            }
+            
+            .header {
+                margin-bottom: 20px;
+                padding: 10px;
+            }
+            
+            .demo-container {
+                margin-bottom: 20px;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 20px;
+            }
+            
+            .call-simulation {
+                padding: 20px;
+                margin: 15px 0;
+            }
+        }
+
+        /* Улучшение для устройств с прикрепленной клавиатурой */
+        @media (max-height: 400px) {
+            .container {
+                padding: 5px 0;
+            }
+            
+            .auth-flow, .info-panel {
+                padding: 15px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            .call-simulation {
+                padding: 15px;
+                margin: 12px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">UNIBELL</div>
+            <div class="company-info">
+                <div style="color: var(--primary); font-weight: 600;">Flash Call авторизация</div>
+                <div style="color: var(--text-muted); font-size: 14px;">Инновационный способ входа</div>
+            </div>
+        </header>
+        
+        <div class="demo-container">
+            <div class="auth-flow">
+                <h2 class="flow-title">Тестирование Flash Call авторизации</h2>
+                
+                <!-- Шаг 1: Ввод телефона -->
+                <div class="step active" id="step1">
+                    <div class="form-group">
+                        <label for="phone">Введите номер телефона</label>
+                        <input type="text" id="phone" placeholder="Например: 79123456789" required>
+                    </div>
+                    <button class="btn btn-call" id="initiateCallBtn">
+                        <i class="fas fa-phone"></i> Инициировать Flash Call
+                    </button>
+                </div>
+                
+                <!-- Шаг 2: Имитация звонка -->
+                <div class="step" id="step2">
+                    <div class="call-simulation">
+                        <div class="call-status">
+                            <i class="fas fa-phone-volume" style="color: var(--primary); font-size: 24px;"></i>
+                            <br>
+                            Имитация входящего звонка...
+                        </div>
+                        <div class="call-number" id="callerNumber">+7 (900) 123-45-67</div>
+                        <div class="call-status" id="callStatus">
+                            Определите последние 4 цифры номера
+                        </div>
+                    </div>
+                    
+                    <p class="timer" id="timer">
+                        Звонок активен: <span id="countdown">00:30</span>
+                    </p>
+                    
+                    <div class="form-group">
+                        <label for="lastDigits">Последние 4 цифры номера звонящего</label>
+                        <input type="text" id="lastDigits" placeholder="Введите 4 цифры" maxlength="4" required>
+                    </div>
+                    
+                    <button class="btn" id="verifyCallBtn">
+                        <i class="fas fa-check"></i> Подтвердить авторизацию
+                    </button>
+                    
+                    <button class="btn btn-secondary" id="backToPhoneBtn">
+                        <i class="fas fa-arrow-left"></i> Назад
+                    </button>
+                </div>
+                
+                <!-- Шаг 3: Успех -->
+                <div class="step" id="step3">
+                    <div class="status-message success" id="successMessage">
+                        <i class="fas fa-check-circle"></i> Авторизация успешна! Flash Call подтвержден.
+                    </div>
+                    <button class="btn" id="restartBtn">
+                        <i class="fas fa-redo"></i> Начать заново
+                    </button>
+                </div>
+                
+                <!-- Сообщение об ошибке -->
+                <div class="status-message error" id="errorMessage">
+                    <i class="fas fa-exclamation-circle"></i> Неверные цифры. Попробуйте еще раз.
+                </div>
+            </div>
+            
+            <div class="info-panel">
+                <h2 style="color: var(--primary); margin-bottom: 30px; text-align: center;">Преимущества Flash Call</h2>
+                
+                <ul class="benefits-list">
+                    <li>Мгновенная авторизация за 10-15 секунд</li>
+                    <li>Не требует ввода кодов вручную</li>
+                    <li>Высокая безопасность</li>
+                    <li>Работает даже при плохом интернете</li>
+                    <li>Пользователь не платит за звонок</li>
+                    <li>Поддержка всех мобильных операторов</li>
+                </ul>
+                
+                <div style="background: rgba(80, 255, 234, 0.1); padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid var(--primary);">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">Как работает демо:</h3>
+                    <ol style="color: var(--text-light); padding-left: 20px;">
+                        <li style="margin-bottom: 8px;">Введите любой номер телефона</li>
+                        <li style="margin-bottom: 8px;">Нажмите "Инициировать Flash Call"</li>
+                        <li style="margin-bottom: 8px;">Система покажет случайный номер звонящего</li>
+                        <li style="margin-bottom: 8px;">Введите последние 4 цифры этого номера</li>
+                        <li>Наслаждайтесь мгновенной авторизацией!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Демонстрация сервиса Flash Call авторизации Unibell &copy; 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const step1 = document.getElementById('step1');
+            const step2 = document.getElementById('step2');
+            const step3 = document.getElementById('step3');
+            const phoneInput = document.getElementById('phone');
+            const lastDigitsInput = document.getElementById('lastDigits');
+            const initiateCallBtn = document.getElementById('initiateCallBtn');
+            const verifyCallBtn = document.getElementById('verifyCallBtn');
+            const backToPhoneBtn = document.getElementById('backToPhoneBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            const callerNumberDisplay = document.getElementById('callerNumber');
+            const countdownDisplay = document.getElementById('countdown');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            const callStatus = document.getElementById('callStatus');
+            
+            let generatedCallerNumber = '';
+            let expectedLastDigits = '';
+            let countdownInterval;
+            let timeLeft = 30;
+            
+            initiateCallBtn.addEventListener('click', function() {
+                const phone = phoneInput.value.trim();
+                
+                if (!phone || phone.length < 5) {
+                    alert('Пожалуйста, введите номер телефона');
+                    return;
+                }
+                
+                const prefix = '+7 (900) ';
+                const randomPart = Math.floor(1000000 + Math.random() * 9000000).toString();
+                generatedCallerNumber = prefix + randomPart.substring(0, 3) + '-' + randomPart.substring(3, 5) + '-' + randomPart.substring(5, 7);
+                expectedLastDigits = randomPart.substring(3, 7);
+                
+                callerNumberDisplay.textContent = generatedCallerNumber;
+                
+                step1.classList.remove('active');
+                step2.classList.add('active');
+                errorMessage.style.display = 'none';
+                
+                startCountdown();
+                
+                setTimeout(() => {
+                    callStatus.textContent = 'Звонок принят! Определите последние 4 цифры номера';
+                    callStatus.style.color = 'var(--primary)';
+                }, 2000);
+            });
+            
+            verifyCallBtn.addEventListener('click', function() {
+                const enteredDigits = lastDigitsInput.value.trim();
+                
+                if (enteredDigits === expectedLastDigits) {
+                    step2.classList.remove('active');
+                    step3.classList.add('active');
+                    successMessage.style.display = 'block';
+                    clearInterval(countdownInterval);
+                } else {
+                    errorMessage.style.display = 'block';
+                    lastDigitsInput.value = '';
+                    lastDigitsInput.focus();
+                }
+            });
+            
+            backToPhoneBtn.addEventListener('click', function() {
+                step2.classList.remove('active');
+                step1.classList.add('active');
+                clearInterval(countdownInterval);
+                callStatus.textContent = 'Определите последние 4 цифры номера';
+                callStatus.style.color = 'var(--text-muted)';
+            });
+            
+            restartBtn.addEventListener('click', function() {
+                step3.classList.remove('active');
+                step1.classList.add('active');
+                phoneInput.value = '';
+                lastDigitsInput.value = '';
+                successMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                timeLeft = 30;
+                countdownDisplay.textContent = '00:30';
+                callStatus.textContent = 'Определите последние 4 цифры номера';
+                callStatus.style.color = 'var(--text-muted)';
+            });
+            
+            function startCountdown() {
+                clearInterval(countdownInterval);
+                timeLeft = 30;
+                
+                countdownInterval = setInterval(function() {
+                    timeLeft--;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdownInterval);
+                        countdownDisplay.textContent = '00:00';
+                        errorMessage.textContent = 'Время звонка истекло. Запросите новый Flash Call.';
+                        errorMessage.style.display = 'block';
+                    } else {
+                        const seconds = timeLeft;
+                        countdownDisplay.textContent = `00:${seconds.toString().padStart(2, '0')}`;
+                    }
+                }, 1000);
+            }
+            
+            lastDigitsInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+                
+                if (this.value.length === 4) {
+                    verifyCallBtn.click();
+                }
+            });
+            
+            phoneInput.focus();
+        });
+    </script>
+</body>
+</html>
